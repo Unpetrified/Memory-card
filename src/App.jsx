@@ -1,13 +1,12 @@
-import { useState } from 'react'
-import './App.css'
+import './assets/styles/App.css';
+import { Header, Footer } from './components/header_footer';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      {count}
-      <button onClick={() => setCount(count + 1)}>Click</button>
+    <Header/>
+    <Footer/>
     </>
   )
 }
