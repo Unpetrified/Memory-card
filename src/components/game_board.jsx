@@ -48,8 +48,7 @@ export default function Game({ s, sScore }) {
     return shuffle(images_details);
   }
 
-  const PEXELS_API_KEY =
-    "a7rs1C7kikr4riDacwlJFt0Yhvrc0yMtZCzLGCftqIMcWs2ErLdTFtfb";
+  const PEXELS_API_KEY = import.meta.env.VITE_PEXELS_API_KEY;
 
   const PHOTO_IDS = [
       16253352, 1648349, 14823947, 16734963, 2065635, 25946301, 13499745,
