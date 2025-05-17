@@ -1,56 +1,92 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import shuffle from "../helper-functions/array_shuffler";
 
-export default function Game({ c, b, setC, setB }) {
+export default function Game({ s, sScore }) {
   function shuffleArray(e) {
-    const target_key = e.target.getAttribute("data-key");
+    const target_key = e.target.parentNode.getAttribute("data-key");
 
+    // image has not been clicked
     if (!clicked.includes(target_key)) {
-      setC(c + 1);
-      c >= b ? setB(c + 1) : "";
+      const newScore = { ...s };
+      newScore.current = s.current + 1;
+      newScore.current >= newScore.best
+        ? (newScore.best = newScore.current)
+        : "";
+      sScore(newScore);
       setClicked([...clicked, target_key]);
+
+      // check if player has won the game
       if (clicked.length === images.length - 1) {
         alert("You win!");
-        setB(c + 1);
-        setC(0);
+        newScore.best = newScore.current;
+        newScore.current = 0;
+        sScore(newScore);
         setClicked([]);
       }
     }
 
+    // player failed to click all images once
     if (clicked.includes(target_key)) {
       setClicked([]);
-      setC(0);
+      const newScore = { ...s };
+      newScore.current = 0;
+      sScore(newScore);
     }
-
-    let newArr = shuffle(images);
-    setImages(newArr);
+    setImages(shuffle(images));
   }
 
-  const [images, setImages] = useState(
-    shuffle([
-      { val: 1, key: crypto.randomUUID() },
-      { val: 2, key: crypto.randomUUID() },
-      { val: 3, key: crypto.randomUUID() },
-      { val: 4, key: crypto.randomUUID() },
-      { val: 5, key: crypto.randomUUID() },
-      { val: 6, key: crypto.randomUUID() },
-      { val: 7, key: crypto.randomUUID() },
-      { val: 8, key: crypto.randomUUID() },
-      { val: 9, key: crypto.randomUUID() },
-      { val: 10, key: crypto.randomUUID() },
-      { val: 11, key: crypto.randomUUID() },
-      { val: 12, key: crypto.randomUUID() },
-    ])
-  );
+  function extractImageDetails(api_response_arr) {
+    const images_details = [];
+    api_response_arr.map((arr_item) => {
+      const img_details = {
+        src: arr_item.src.medium,
+        alt: arr_item.alt,
+        key: crypto.randomUUID(),
+      };
+      images_details.push(img_details);
+    });
+    return shuffle(images_details);
+  }
 
-  const [clicked, setClicked] = useState([]);
+  const PEXELS_API_KEY =
+    "a7rs1C7kikr4riDacwlJFt0Yhvrc0yMtZCzLGCftqIMcWs2ErLdTFtfb";
+
+  const PHOTO_IDS = [
+      16253352, 1648349, 14823947, 16734963, 2065635, 25946301, 13499745,
+      242200, 62276, 8281124, 4094769, 3991204,
+    ],
+    [loading, setLoading] = useState(true),
+    [images, setImages] = useState([]),
+    [clicked, setClicked] = useState([]);
+
+  // generate images on page load
+  useEffect(() => {
+    Promise.all(
+      PHOTO_IDS.map((id) =>
+        fetch(`https://api.pexels.com/v1/photos/${id}`, {
+          headers: {
+            Authorization: PEXELS_API_KEY,
+          },
+        }).then((res) => res.json())
+      )
+    )
+      .then((results) => {
+        setImages(extractImageDetails(results));
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Could not fetch photos:", error);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <ul className="game">
       {images.map((img) => {
         return (
           <li key={img.key} onClick={shuffleArray} data-key={img.key}>
-            {img.val}
+            <img className="memory-img" src={img.src} alt={img.alt} />
+            {loading ? <p>Images are loading</p> : ""}
           </li>
         );
       })}

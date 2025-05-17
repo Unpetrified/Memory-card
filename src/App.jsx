@@ -5,13 +5,12 @@ import { useState } from "react";
 import HowToPlay from "./components/how_to_play";
 
 function App() {
-  const [current, setCurrent] = useState(0),
-    [best, setBest] = useState(current);
+  const [score, setScore] = useState({ current: 0, best: 0 });
   return (
     <>
-      <Header c={current} b={best} />
+      <Header c={score.current} b={score.best} />
       <HowToPlay />
-      <Game c={current} b={best} setC={setCurrent} setB={setBest} />
+      <Game s={score} sScore={setScore} />
       <Footer />
     </>
   );
